@@ -13,6 +13,8 @@ export class LoginUsuarioController {
 
         if (valid) {
             res.status(200).json({ mensaje: 'Login exitoso' })
+            console.log(`Usuario ${username} ha iniciado sesión exitosamente`);
+            
         } else {
             res.status(401).json({ mensaje: 'Credenciales incorrectas' })
         }
