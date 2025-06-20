@@ -8,11 +8,9 @@ export class LoginUsuarioController {
 
     login = async (req: Request, res: Response) => {
         const { username, password } = req.body
-
-        const valid = await this.loginCasoUso.ejecutar(username, password)
-
-        if (valid) {
-            res.status(200).json({ mensaje: 'Login exitoso' })
+        const token = await this.loginCasoUso.ejecutar(username, password)
+        if (token) {
+            res.status(200).json({ mensaje: 'Login exitoso', token })
             console.log(`Usuario ${username} ha iniciado sesión exitosamente`);
             
         } else {
