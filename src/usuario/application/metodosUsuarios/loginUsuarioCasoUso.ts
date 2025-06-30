@@ -1,5 +1,5 @@
 import { UsuarioRepository } from '../../domain/repositories/UsuarioRepository'
-import { generarToken } from '../../utils/jws'
+import { generarToken } from '../../../utils/jws'
 
 export class LoginUsuarioCasoUso {
     constructor(private readonly repo: UsuarioRepository) {}

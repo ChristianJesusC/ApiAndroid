@@ -5,5 +5,6 @@ export class Juego {
         readonly compania: string,
         readonly descripcion: string,
         readonly cantidad: number,
+        readonly logo: string
     ) {}
 }
