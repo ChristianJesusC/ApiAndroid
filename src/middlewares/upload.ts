@@ -3,10 +3,13 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
-// Crear directorio si no existe
-const uploadDir = path.join(__dirname, '../../uploads');
+// Usar process.cwd() para obtener la raíz del proyecto
+const uploadDir = path.join(process.cwd(), 'uploads');
+console.log('📁 Directorio de uploads:', uploadDir);
+
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
+  console.log('✅ Directorio uploads creado');
 }
 
 // Configuración de almacenamiento
@@ -18,13 +21,16 @@ const storage = multer.diskStorage({
     // Generar nombre único para el archivo
     const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const extension = path.extname(file.originalname);
-    cb(null, `game-logo-${uniqueName}${extension}`);
+    const filename = `game-logo-${uniqueName}${extension}`;
+    console.log('🖼️ Guardando archivo como:', filename);
+    cb(null, filename);
   }
 });
 
 // Filtro para validar tipos de archivo
 const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  // Permitir solo imágenes
+  console.log('🔍 Validando archivo:', file.originalname, 'MIME:', file.mimetype);
+  
   const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
   
   if (allowedMimes.includes(file.mimetype)) {

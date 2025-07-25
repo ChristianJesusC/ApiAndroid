@@ -15,23 +15,36 @@ export class JuegoController {
 
   crearJuego = async (req: Request, res: Response) => {
     try {
+      console.log("📋 Body recibido:", req.body);
+      console.log("📁 Archivo recibido:", req.file);
+
       const { nombre, compania, descripcion, cantidad } = req.body;
-      
-      // Construir la URL completa del logo
+
       const logoPath = req.file ? `/uploads/${req.file.filename}` : "";
-      
-      const juego = new Juego(null, nombre, compania, descripcion, parseInt(cantidad), logoPath);
-      const juegoCreado = await this.crear.ejecutar(juego);
-      
-      res.status(201).json({ 
+      console.log("🖼️ Logo path generado:", logoPath);
+
+      const juego = new Juego(
+        null,
+        nombre,
+        compania,
+        descripcion,
+        parseInt(cantidad),
+        logoPath
+      );
+      await this.crear.ejecutar(juego);
+
+      console.log("✅ Juego creado exitosamente");
+
+      res.status(201).json({
         success: true,
         mensaje: "Juego creado correctamente",
-        data: juegoCreado
+        data: juego,
       });
     } catch (error) {
-      res.status(500).json({ 
+      console.error("❌ Error al crear juego:", error);
+      res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : "Error desconocido" 
+        error: error instanceof Error ? error.message : "Error desconocido",
       });
     }
   };
@@ -39,21 +52,21 @@ export class JuegoController {
   obtenerJuegos = async (_: Request, res: Response) => {
     try {
       const juegos = await this.obtener.ejecutar();
-      
-      // Asegurar que las URLs de los logos sean completas
-      const juegosConLogos = juegos.map(juego => ({
+
+      const juegosConLogos = juegos.map((juego) => ({
         ...juego,
-        logo: juego.logo ? juego.logo : "/uploads/default-game.png"
+        logo: juego.logo ? juego.logo : "/uploads/default-game.png",
       }));
 
       res.json({
         success: true,
-        data: juegosConLogos
+        data: juegosConLogos,
       });
     } catch (error) {
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : "Error al obtener juegos" 
+        error:
+          error instanceof Error ? error.message : "Error al obtener juegos",
       });
     }
   };
@@ -62,28 +75,34 @@ export class JuegoController {
     try {
       const { id } = req.params;
       const { nombre, compania, descripcion, cantidad } = req.body;
-      
-      // Si hay nuevo archivo, usar la nueva ruta; si no, mantener la existente
+
       let logoPath = "";
       if (req.file) {
         logoPath = `/uploads/${req.file.filename}`;
       } else {
-        // Aquí podrías obtener el logo actual del juego si no se está actualizando
         logoPath = req.body.logoActual || "";
       }
-      
-      const juego = new Juego(Number(id), nombre, compania, descripcion, parseInt(cantidad), logoPath);
+
+      const juego = new Juego(
+        Number(id),
+        nombre,
+        compania,
+        descripcion,
+        parseInt(cantidad),
+        logoPath
+      );
       const juegoActualizado = await this.actualizar.ejecutar(juego);
-      
-      res.json({ 
+
+      res.json({
         success: true,
         mensaje: "Juego actualizado correctamente",
-        data: juegoActualizado
+        data: juegoActualizado,
       });
     } catch (error) {
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : "Error al actualizar juego" 
+        error:
+          error instanceof Error ? error.message : "Error al actualizar juego",
       });
     }
   };
@@ -92,14 +111,15 @@ export class JuegoController {
     try {
       const { id } = req.params;
       await this.eliminar.ejecutar(Number(id));
-      res.json({ 
+      res.json({
         success: true,
-        mensaje: "Juego eliminado correctamente" 
+        mensaje: "Juego eliminado correctamente",
       });
     } catch (error) {
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : "Error al eliminar juego" 
+        error:
+          error instanceof Error ? error.message : "Error al eliminar juego",
       });
     }
   };

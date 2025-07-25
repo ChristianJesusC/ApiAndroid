@@ -12,7 +12,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.use("/usuarios", usuarioRoutes);
 app.use("/juegos", juegoRoutes);
@@ -22,7 +22,6 @@ const HOST = process.env.HOST || 'localhost';
 
 async function startServer() {
   try {
-    // Inicializar base de datos
     await inicializarDB();
 
     // Iniciar servidor
@@ -41,7 +40,6 @@ async function startServer() {
   }
 }
 
-// Manejar errores no capturados
 process.on('unhandledRejection', (reason, promise) => {
   console.error('❌ Promesa rechazada no manejada:', reason);
   process.exit(1);
@@ -52,5 +50,4 @@ process.on('uncaughtException', (error) => {
   process.exit(1);
 });
 
-// Iniciar la aplicación
 startServer();
