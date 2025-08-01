@@ -17,6 +17,7 @@ export async function query(sql: string, params: any[]) {
     const conn = await pool.getConnection();
     const result = await conn.execute(sql, params);
     conn.release();
+    console.clear();
     return result;
   } catch (error) {
     console.error("Error en la consulta SQL:", error);
@@ -24,10 +25,8 @@ export async function query(sql: string, params: any[]) {
   }
 }
 
-// Función para crear las tablas
 export async function crearTablas() {
   try {
-    // Crear tabla usuarios
     const crearTablaUsuarios = `
       CREATE TABLE IF NOT EXISTS usuarios (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -36,7 +35,6 @@ export async function crearTablas() {
       )
     `;
 
-    // Crear tabla juegos
     const crearTablaJuegos = `
       CREATE TABLE IF NOT EXISTS juegos (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -48,8 +46,22 @@ export async function crearTablas() {
       )
     `;
 
+    const crearTablaDeviceTokens = `
+      CREATE TABLE IF NOT EXISTS device_tokens (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        token VARCHAR(500) NOT NULL UNIQUE,
+        platform ENUM('android', 'ios', 'web') NOT NULL,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES usuarios(id) ON DELETE CASCADE
+      )
+    `;
+
     await query(crearTablaUsuarios, []);
     await query(crearTablaJuegos, []);
+    await query(crearTablaDeviceTokens, []);
     
     console.log("📊 Tablas creadas exitosamente");
   } catch (error) {
@@ -58,19 +70,16 @@ export async function crearTablas() {
   }
 }
 
-// Función para inicializar la base de datos
 export async function inicializarDB() {
   try {
     console.log("🔄 Verificando conexión a la base de datos...");
     
-    // Verificar conexión
     const conn = await pool.getConnection();
     await conn.ping();
     conn.release();
     
     console.log("✅ Conexión a la base de datos establecida");
     
-    // Crear tablas
     await crearTablas();
     
     console.log("🎉 Base de datos inicializada correctamente");

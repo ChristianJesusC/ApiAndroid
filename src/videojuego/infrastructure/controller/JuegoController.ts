@@ -4,6 +4,8 @@ import { ActualizarJuego } from "../../application/CaseUse/ActualizarJuego";
 import { ObtenerJuegos } from "../../application/CaseUse/ObtenerJuegos";
 import { EliminarJuego } from "../../application/CaseUse/EliminarJuego";
 import { Juego } from "../../domain/entities/Juego";
+import { query } from '../../../database/sql';
+import { firebaseService } from '../../../services/FirebaseService';
 
 export class JuegoController {
   constructor(
@@ -13,7 +15,7 @@ export class JuegoController {
     private readonly eliminar: EliminarJuego
   ) {}
 
-  crearJuego = async (req: Request, res: Response) => {
+  crearJuego = async (req: Request, res: Response): Promise<void> => {
     try {
       console.log("📋 Body recibido:", req.body);
       console.log("📁 Archivo recibido:", req.file);
@@ -31,9 +33,47 @@ export class JuegoController {
         parseInt(cantidad),
         logoPath
       );
+      
       await this.crear.ejecutar(juego);
-
       console.log("✅ Juego creado exitosamente");
+
+      try {
+        console.log('📱 Enviando notificaciones push para nuevo juego...');
+        
+        const [rows]: any = await query(
+          'SELECT DISTINCT token FROM device_tokens WHERE is_active = true', 
+          []
+        );
+        
+        const tokens = rows.map((row: any) => row.token);
+        console.log(`📋 Tokens activos encontrados: ${tokens.length}`);
+        
+        if (tokens.length > 0) {
+          const notificationSent = await firebaseService.sendNotificationToTokens(
+            tokens,
+            '🎮 Nuevo juego disponible!',
+            `${nombre} de ${compania} ya está disponible en nuestra tienda`,
+            {
+              tipo: 'nuevo_juego',
+              juego_nombre: nombre,
+              juego_compania: compania,
+              action: 'view_game',
+              timestamp: Date.now().toString()
+            }
+          );
+          
+          if (notificationSent) {
+            console.log('🎉 Notificaciones enviadas correctamente');
+          } else {
+            console.log('⚠️ No se pudieron enviar las notificaciones');
+          }
+        } else {
+          console.log('📱 No hay dispositivos registrados para notificaciones');
+        }
+        
+      } catch (notificationError) {
+        console.error('❌ Error enviando notificaciones:', notificationError);
+      }
 
       res.status(201).json({
         success: true,
@@ -49,7 +89,7 @@ export class JuegoController {
     }
   };
 
-  obtenerJuegos = async (_: Request, res: Response) => {
+  obtenerJuegos = async (_: Request, res: Response): Promise<void> => {
     try {
       const juegos = await this.obtener.ejecutar();
 
@@ -71,7 +111,7 @@ export class JuegoController {
     }
   };
 
-  actualizarJuego = async (req: Request, res: Response) => {
+  actualizarJuego = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       const { nombre, compania, descripcion, cantidad } = req.body;
@@ -91,12 +131,12 @@ export class JuegoController {
         parseInt(cantidad),
         logoPath
       );
-      const juegoActualizado = await this.actualizar.ejecutar(juego);
+      await this.actualizar.ejecutar(juego);
 
       res.json({
         success: true,
         mensaje: "Juego actualizado correctamente",
-        data: juegoActualizado,
+        data: juego,
       });
     } catch (error) {
       res.status(500).json({
@@ -107,7 +147,7 @@ export class JuegoController {
     }
   };
 
-  eliminarJuego = async (req: Request, res: Response) => {
+  eliminarJuego = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       await this.eliminar.ejecutar(Number(id));

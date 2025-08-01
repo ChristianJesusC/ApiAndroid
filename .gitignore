@@ -2,4 +2,6 @@ node_modules/
 dist/
 .env
 .scannerwork/
-./src/uploads
+uploads
+config/firebase-service-account.json
+scannerwork/
