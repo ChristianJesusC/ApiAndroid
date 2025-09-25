@@ -27,7 +27,7 @@ async function startServer() {
     await inicializarDB();
 
     app.listen(PORT, () => {
-      console.log("🚀 Servidor corriendo en el puerto", PORT);
+      console.log("🚀 Servidor corriendo en el puerto ", PORT);
       console.log(`🌐 API disponible en: http://${HOST}:${PORT}`);
     });
   } catch (error) {
