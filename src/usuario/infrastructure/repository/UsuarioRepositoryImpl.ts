@@ -19,4 +19,33 @@ export class UsuarioRepositoryImpl implements UsuarioRepository {
         const [rows] = result
         return rows.length > 0
     }
+
+        async obtenerUsuarios() {
+        try {
+            const usuarios: any = await query("SELECT * FROM usuarios", []);
+
+            if (!usuarios) {
+                console.log("no hay usuarios, error desconocido");
+                return null;
+            }
+
+            const [rows] = usuarios;
+
+            if (rows.length === 0) {
+                console.log("no hay usuarios en la db");
+                return [];
+            }
+
+            // mapear cada fila a un Usuario
+            const listaUsuarios: Usuario[] = rows.map((row: any) =>
+                new Usuario(row.id, row.username, row.password)
+            );
+
+            return listaUsuarios;
+
+        } catch (error) {
+            console.log(error);
+            return null;
+        }
+    }
 }
