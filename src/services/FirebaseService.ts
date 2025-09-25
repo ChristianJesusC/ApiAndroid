@@ -4,7 +4,7 @@ import fs from 'fs';
 
 class FirebaseService {
     private static instance: FirebaseService;
-    private messaging: admin.messaging.Messaging;
+    private messaging: any;//admin.messaging.Messaging;
 
     private constructor() {
         if (!admin.apps.length) {
@@ -68,7 +68,7 @@ class FirebaseService {
                 
                 if (response.failureCount > 0) {
                     console.log(`❌ Fallos: ${response.failureCount}`);
-                    response.responses.forEach((resp, idx) => {
+                    response.responses.forEach((resp:any, idx:number) => {
                         if (!resp.success && resp.error) {
                             console.error(`❌ Error en token ${idx}:`, resp.error.message);
                         }
