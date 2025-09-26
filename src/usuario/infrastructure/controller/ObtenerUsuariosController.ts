@@ -4,7 +4,7 @@ import { ObtenerUsuariosCasoUso } from "../../application/metodosUsuarios/Obtene
 export class ObtenerUsuariosController {
   constructor(private readonly casoUso: ObtenerUsuariosCasoUso) {}
 
-  async run(req: Request, res: Response) {
+  run = async (req: Request, res: Response) => {
     const resultado = await this.casoUso.run();
     if (!resultado) {
       res.status(500).json({
