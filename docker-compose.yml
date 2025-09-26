@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB}
+      MYSQL_USER: ${USUARIO}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: node_app
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - /home/ubuntu/app/.env
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+      - ./config:/app/config
+
+volumes:
+  mysql_data:
