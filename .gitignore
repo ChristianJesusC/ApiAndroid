@@ -5,3 +5,11 @@ dist/
 uploads
 config/firebase-service-account.json
 scannerwork/
+node_modules/
+dist/
+.env
+*.pem
+.DS_Store
+uploads/*
+!uploads/.gitkeep
+config/firebase-service-account.json
