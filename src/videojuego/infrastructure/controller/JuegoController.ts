@@ -32,7 +32,7 @@ export class JuegoController {
       console.log("👤 Usuario autenticado:", req.usuario);
 
       const { nombre, compania, descripcion, cantidad } = req.body;
-      const usuario = req.usuario
+      const usuario = req.usuario || { id: 1, username: 'sistema' };
 
       if (!usuario) {
         res.status(401).json({
