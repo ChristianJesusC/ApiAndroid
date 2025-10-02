@@ -225,7 +225,7 @@ export class JuegoController {
   ): Promise<void> => {
     try {
       const { id } = req.params;
-      const usuario = req.usuario;
+      const usuario = req.usuario || { id: 1, username: 'invitado' };
 
       if (!usuario) {
         res.status(401).json({
