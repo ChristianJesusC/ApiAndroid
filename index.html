@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Videojuegos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .refresh-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 15px;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .game-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        .game-content {
+            padding: 20px;
+        }
+
+        .game-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .game-company {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .game-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            min-height: 50px;
+        }
+
+        .game-quantity {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.5em;
+            margin-top: 50px;
+        }
+
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        .no-games {
+            text-align: center;
+            color: white;
+            font-size: 1.3em;
+            margin-top: 50px;
+            background: rgba(255,255,255,0.2);
+            padding: 40px;
+            border-radius: 15px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 50px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 Catálogo de Videojuegos</h1>
+            <p>Explora nuestra colección de juegos</p>
+            <button class="refresh-btn" onclick="cargarJuegos()">🔄 Actualizar</button>
+        </header>
+
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Cargando juegos...</p>
+        </div>
+
+        <div id="error" style="display: none;"></div>
+
+        <div id="games-container" class="games-grid"></div>
+    </div>
+
+    <script>
+        // ⚠️ CONFIGURA AQUÍ LA URL DE TU SERVIDOR
+        const API_URL = 'http://44.217.8.127:3000'; // Cambia el puerto si es diferente
+
+        async function cargarJuegos() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const container = document.getElementById('games-container');
+
+            // Mostrar loading
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            container.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_URL}/juegos`);
+                
+                if (!response.ok) {
+                    throw new Error(`Error del servidor: ${response.status}`);
+                }
+
+                const data = await response.json();
+                loading.style.display = 'none';
+
+                if (!data.success || !data.data || data.data.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-games">
+                            <h2>📭 No hay juegos disponibles</h2>
+                            <p>Aún no se han agregado juegos al catálogo</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Renderizar juegos
+                data.data.forEach((juego, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'game-card';
+                    card.style.animationDelay = `${index * 0.1}s`;
+                    
+                    const imagenUrl = juego.logo && juego.logo !== '/uploads/default-game.png' 
+                        ? `${API_URL}${juego.logo}` 
+                        : 'https://via.placeholder.com/300x200/667eea/ffffff?text=Sin+Imagen';
+
+                    card.innerHTML = `
+                        <img src="${imagenUrl}" 
+                             alt="${juego.nombre}" 
+                             class="game-image"
+                             onerror="this.src='https://via.placeholder.com/300x200/667eea/ffffff?text=Sin+Imagen'">
+                        <div class="game-content">
+                            <h2 class="game-title">${juego.nombre}</h2>
+                            <div class="game-company">🏢 ${juego.compania}</div>
+                            <p class="game-description">${juego.descripcion || 'Sin descripción'}</p>
+                            <span class="game-quantity">📦 Stock: ${juego.cantidad}</span>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+
+            } catch (err) {
+                loading.style.display = 'none';
+                error.style.display = 'block';
+                error.className = 'error';
+                error.innerHTML = `
+                    <h3>⚠️ Error al cargar los juegos</h3>
+                    <p>${err.message}</p>
+                    <p style="margin-top: 10px; font-size: 0.9em;">
+                        Verifica que el servidor esté corriendo en: ${API_URL}
+                    </p>
+                `;
+                console.error('Error completo:', err);
+            }
+        }
+
+        // Cargar juegos al iniciar la página
+        document.addEventListener('DOMContentLoaded', cargarJuegos);
+    </script>
+</body>
+</html>
